@@ -35,7 +35,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { CustomerDetails } from "../components/CustomerDetails";
-import { AddAdmin } from "../components/AddAdmin";
+import { AddUserDialog } from "../components/AddUserDialog";
 import { UpdateServiceProgress } from "../components/UpdateServiceProgress";
 import { AnalyticsCharts } from "../components/AnalyticsCharts";
 import { supabase } from "../lib/supabase";
@@ -49,6 +49,7 @@ export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [showAddAdmin, setShowAddAdmin] = useState(false);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -128,9 +129,29 @@ export function AdminDashboard() {
     Premium: customers.filter((c) => c.membership === "Premium").length,
   };
 
-  const handleAddAdmin = async (name: string, email: string, role: string) => {
-    toast.info("Admin accounts must be created through Supabase Auth first.");
-    setShowAddAdmin(false);
+  const handleAddUser = async (data: { name: string; email: string; role: string; password?: string }) => {
+    try {
+      // In a real production app with Service Role Key, we would use supabase.auth.admin.createUser
+      // For now, we create the profile entry. The user must still be created in Supabase Auth.
+
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          full_name: data.name,
+          email: data.email,
+          role: data.role,
+          status: 'Active',
+          membership: data.role === 'customer' ? 'Basic' : undefined
+        });
+
+      if (error) throw error;
+
+      toast.success(`${data.role === 'admin' ? 'Admin' : 'Customer'} profile created!`);
+      toast.info(`Note: You must now go to Supabase Auth and create a user with email ${data.email} to allow them to log in.`);
+      fetchData();
+    } catch (error: any) {
+      toast.error("Failed to create profile: " + error.message);
+    }
   };
 
   if (loading) {
@@ -260,14 +281,37 @@ export function AdminDashboard() {
                       View and manage all customer accounts
                     </CardDescription>
                   </div>
-                  <div className="relative w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      placeholder="Search customers..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+                  <div className="flex items-center gap-4">
+                    <Dialog open={showAddCustomer} onOpenChange={setShowAddCustomer}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-[#6A89A7] hover:bg-[#88BDF2] text-white">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Customer
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Add New Customer</DialogTitle>
+                          <DialogDescription>
+                            Create a new customer profile.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <AddUserDialog
+                          type="customer"
+                          onAdd={handleAddUser}
+                          onClose={() => setShowAddCustomer(false)}
+                        />
+                      </DialogContent>
+                    </Dialog>
+                    <div className="relative w-72">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Search customers..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -373,7 +417,11 @@ export function AdminDashboard() {
                           Create a new administrative user account
                         </DialogDescription>
                       </DialogHeader>
-                      <AddAdmin onAdd={handleAddAdmin} />
+                      <AddUserDialog
+                        type="admin"
+                        onAdd={handleAddUser}
+                        onClose={() => setShowAddAdmin(false)}
+                      />
                     </DialogContent>
                   </Dialog>
                 </div>

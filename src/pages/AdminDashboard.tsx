@@ -131,26 +131,19 @@ export function AdminDashboard() {
 
   const handleAddUser = async (data: { name: string; email: string; role: string; password?: string }) => {
     try {
-      // In a real production app with Service Role Key, we would use supabase.auth.admin.createUser
-      // For now, we create the profile entry. The user must still be created in Supabase Auth.
-
-      const { error } = await supabase
-        .from('profiles')
-        .insert({
-          full_name: data.name,
-          email: data.email,
-          role: data.role,
-          status: 'Active',
-          membership: data.role === 'customer' ? 'Basic' : undefined
-        });
+      const { error } = await supabase.rpc('create_new_user', {
+        user_email: data.email,
+        user_password: data.password,
+        user_full_name: data.name,
+        user_role: data.role
+      });
 
       if (error) throw error;
 
-      toast.success(`${data.role === 'admin' ? 'Admin' : 'Customer'} profile created!`);
-      toast.info(`Note: You must now go to Supabase Auth and create a user with email ${data.email} to allow them to log in.`);
+      toast.success(`${data.role === 'admin' ? 'Admin' : 'Customer'} created successfully!`);
       fetchData();
     } catch (error: any) {
-      toast.error("Failed to create profile: " + error.message);
+      toast.error("Failed to create user: " + error.message);
     }
   };
 

@@ -141,7 +141,11 @@ export function AdminDashboard() {
       if (error) throw error;
 
       toast.success(`${data.role === 'admin' ? 'Admin' : 'Customer'} created successfully!`);
-      fetchData();
+      // Hide dialogs
+      setShowAddAdmin(false);
+      setShowAddCustomer(false);
+      // Refresh list
+      await fetchData();
     } catch (error: any) {
       toast.error("Failed to create user: " + error.message);
     }

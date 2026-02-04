@@ -36,8 +36,14 @@ export function Login() {
 
       if (profileError) throw profileError;
 
-      if (profile.role !== type) {
-        toast.error(`This account is not registered as an ${type}`);
+      const isAdminType = type === 'admin';
+      const userRoleLower = (profile.role || '').toLowerCase();
+      const isAuthorized = isAdminType
+        ? userRoleLower.includes('admin')
+        : userRoleLower === 'customer';
+
+      if (!isAuthorized) {
+        toast.error(`This account is not authorized as an ${isAdminType ? 'Administrator' : 'Customer'}`);
         await supabase.auth.signOut();
         return;
       }

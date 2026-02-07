@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { FileText, Download, Globe, TrendingUp, Share2, Loader2, Save } from "lucide-react";
+import { FileText, Download, Globe, TrendingUp, Share2, Loader2, Save, Activity } from "lucide-react";
 import { UpdateServiceProgress } from "./UpdateServiceProgress";
 import { supabase } from "../lib/supabase";
 import { toast } from "sonner";
@@ -135,13 +135,13 @@ export function CustomerDetails({ customer, onUpdate }: CustomerDetailsProps) {
   const getServiceIcon = (service: string) => {
     switch (service.toLowerCase()) {
       case "website":
-        return <Globe className="w-4 h-4" />;
+        return <Globe className="w-5 h-5" />;
       case "seo":
-        return <TrendingUp className="w-4 h-4" />;
+        return <TrendingUp className="w-5 h-5" />;
       case "social media":
-        return <Share2 className="w-4 h-4" />;
+        return <Share2 className="w-5 h-5" />;
       default:
-        return null;
+        return <Activity className="w-5 h-5" />;
     }
   };
 

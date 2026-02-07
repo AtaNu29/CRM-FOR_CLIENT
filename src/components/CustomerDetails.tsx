@@ -191,9 +191,9 @@ export function CustomerDetails({ customer, onUpdate }: CustomerDetailsProps) {
               <p className="text-sm text-gray-600 font-medium">Name</p>
               <p className="text-lg">{customer.name}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <p className="text-sm text-gray-600 font-medium">Email</p>
-              <p className="text-lg">{customer.email}</p>
+              <p className="text-lg break-all">{customer.email}</p>
             </div>
 
             <div className="space-y-1">
@@ -238,10 +238,10 @@ export function CustomerDetails({ customer, onUpdate }: CustomerDetailsProps) {
           </div>
 
           {editMode && (
-            <div className="mt-6 flex justify-end">
+            <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
               <Button
                 onClick={handleSaveProfile}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white min-w-[150px] shadow-lg hover:shadow-xl transition-all"
                 disabled={isSaving}
               >
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}

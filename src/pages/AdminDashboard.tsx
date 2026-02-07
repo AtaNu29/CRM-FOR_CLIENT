@@ -41,6 +41,13 @@ import { AnalyticsCharts } from "../components/AnalyticsCharts";
 import { supabase } from "../lib/supabase";
 import { toast } from "sonner";
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../components/ui/popover";
+import { Bell } from "lucide-react";
+
 export function AdminDashboard() {
   const navigate = useNavigate();
   const [customers, setCustomers] = useState<any[]>([]);
@@ -50,10 +57,31 @@ export function AdminDashboard() {
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [showAddAdmin, setShowAddAdmin] = useState(false);
   const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [customerProgressData, setCustomerProgressData] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
+    fetchNotifications();
   }, []);
+
+  const fetchNotifications = async () => {
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (data) setNotifications(data);
+  };
+
+  const markNotificationRead = async (id: string) => {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id);
+
+    if (!error) fetchNotifications();
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -73,15 +101,37 @@ export function AdminDashboard() {
         return acc;
       }, {});
 
-      const customersList = data.filter((p: any) => p.role === 'customer').map(p => ({
-        id: p.id,
-        name: p.full_name || 'No Name',
-        email: p.email,
-        membership: p.membership || 'Basic',
-        status: p.status || 'Active',
-        joinDate: p.join_date || p.created_at?.split('T')[0],
-        filesCount: fileCounts[p.id] || 0
-      }));
+      // Fetch all service updates to calculate progress for analytics
+      const { data: allUpdates } = await supabase
+        .from('service_updates')
+        .select('*');
+
+      const customersList = data.filter((p: any) => p.role === 'customer').map(p => {
+        // Calculate average progress for this customer
+        const userUpdates = (allUpdates || []).filter(u => u.customer_id === p.id);
+        const services = ['Website', 'SEO', 'Social Media'];
+        let totalProgress = 0;
+
+        services.forEach(s => {
+          const latest = userUpdates
+            .filter(u => u.service.toLowerCase() === s.toLowerCase())
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+          totalProgress += latest ? latest.progress : 0;
+        });
+
+        const avgProgress = Math.round(totalProgress / services.length);
+
+        return {
+          id: p.id,
+          name: p.full_name || 'No Name',
+          email: p.email,
+          membership: p.membership || 'Basic',
+          status: p.status || 'Active',
+          joinDate: p.join_date || p.created_at?.split('T')[0],
+          filesCount: fileCounts[p.id] || 0,
+          avgProgress
+        };
+      });
 
       const adminsList = data.filter((p: any) => p.role === 'admin').map(p => ({
         id: p.id,
@@ -93,6 +143,13 @@ export function AdminDashboard() {
 
       setCustomers(customersList);
       setAdmins(adminsList);
+
+      // Data for the completion chart
+      setCustomerProgressData(customersList.map(c => ({
+        name: c.name,
+        progress: c.avgProgress
+      })));
+
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -166,6 +223,8 @@ export function AdminDashboard() {
     );
   }
 
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f5f9fc] to-[#BDDDFC]/20">
       {/* Header */}
@@ -181,14 +240,57 @@ export function AdminDashboard() {
                 <p className="text-sm text-white/80">Manage customers and services</p>
               </div>
             </div>
-            <Button
-              variant="secondary"
-              onClick={handleLogout}
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center space-x-4">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative text-white hover:bg-white/10">
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center border-2 border-[#6A89A7]">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0" align="end">
+                  <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="font-semibold text-[#384959]">Notifications</h3>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => markNotificationRead(n.id)}
+                          className={`p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer transition-colors ${!n.is_read ? 'bg-blue-50/50' : ''}`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <p className={`text-sm font-medium ${!n.is_read ? 'text-[#6A89A7]' : 'text-[#384959]'}`}>{n.title}</p>
+                            {!n.is_read && <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5" />}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">{n.message}</p>
+                          <p className="text-[10px] text-gray-400 mt-2">
+                            {new Date(n.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-sm text-gray-400">
+                        No notifications yet
+                      </div>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button
+                variant="secondary"
+                onClick={handleLogout}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -197,71 +299,80 @@ export function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-xl bg-white/50 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-bold text-[#64748b] uppercase tracking-wider">
                   Total Customers
                 </CardTitle>
-                <Users className="w-5 h-5 text-[#6A89A7]" />
+                <div className="p-2 bg-[#6A89A7]/10 rounded-lg">
+                  <Users className="w-5 h-5 text-[#6A89A7]" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[#384959]">{customers.length}</div>
-              <p className="text-sm text-gray-500 mt-1">
-                {customers.filter((c) => c.status === "Active").length} active
+              <div className="text-4xl font-black text-[#384959]">{customers.length}</div>
+              <p className="text-sm font-semibold text-green-600 mt-2 flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+                {customers.filter((c) => c.status === "Active").length} Active Now
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-xl bg-white/50 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-bold text-[#64748b] uppercase tracking-wider">
                   Basic Plan
                 </CardTitle>
-                <Crown className="w-5 h-5 text-[#BDDDFC]" />
+                <div className="p-2 bg-[#BDDDFC]/20 rounded-lg">
+                  <Crown className="w-5 h-5 text-[#384959]" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[#384959]">
+              <div className="text-4xl font-black text-[#384959]">
                 {membershipStats.Basic}
               </div>
-              <p className="text-sm text-gray-500 mt-1">subscribers</p>
+              <p className="text-sm font-medium text-gray-500 mt-2 italic">Standard Tier</p>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-xl bg-white/50 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Pro Plan
+                <CardTitle className="text-sm font-bold text-[#64748b] uppercase tracking-wider">
+                  Pro Users
                 </CardTitle>
-                <Crown className="w-5 h-5 text-[#88BDF2]" />
+                <div className="p-2 bg-[#88BDF2]/20 rounded-lg">
+                  <Crown className="w-5 h-5 text-[#88BDF2]" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[#384959]">
+              <div className="text-4xl font-black text-[#384959]">
                 {membershipStats.Pro}
               </div>
-              <p className="text-sm text-gray-500 mt-1">subscribers</p>
+              <p className="text-sm font-medium text-gray-500 mt-2 italic">Professional Tier</p>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-xl bg-white/50 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Premium Plan
+                <CardTitle className="text-sm font-bold text-[#64748b] uppercase tracking-wider">
+                  Premium
                 </CardTitle>
-                <Crown className="w-5 h-5 text-[#6A89A7]" />
+                <div className="p-2 bg-[#6A89A7]/20 rounded-lg">
+                  <Crown className="w-5 h-5 text-[#6A89A7]" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[#384959]">
+              <div className="text-4xl font-black text-[#384959]">
                 {membershipStats.Premium}
               </div>
-              <p className="text-sm text-gray-500 mt-1">subscribers</p>
+              <p className="text-sm font-medium text-gray-500 mt-2 italic">Enterprise Tier</p>
             </CardContent>
           </Card>
         </div>
@@ -398,7 +509,7 @@ export function AdminDashboard() {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <AnalyticsCharts customers={customers} />
+            <AnalyticsCharts customers={customers} progressData={customerProgressData} />
           </TabsContent>
 
           {/* Admin Users Tab */}

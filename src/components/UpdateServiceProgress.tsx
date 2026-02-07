@@ -13,15 +13,18 @@ interface UpdateServiceProgressProps {
 
 export function UpdateServiceProgress({ onAdd, onCancel }: UpdateServiceProgressProps) {
   const [service, setService] = useState("");
+  const [customService, setCustomService] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [progress, setProgress] = useState([50]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (service && title && description) {
-      onAdd(service, title, description, progress[0]);
+    const finalService = service === "Other" ? customService : service;
+    if (finalService && title && description) {
+      onAdd(finalService, title, description, progress[0]);
       setService("");
+      setCustomService("");
       setTitle("");
       setDescription("");
       setProgress([50]);
@@ -40,9 +43,23 @@ export function UpdateServiceProgress({ onAdd, onCancel }: UpdateServiceProgress
             <SelectItem value="Website">Website</SelectItem>
             <SelectItem value="SEO">SEO</SelectItem>
             <SelectItem value="Social Media">Social Media</SelectItem>
+            <SelectItem value="Other">Add Custom Service (e.g. AMC)</SelectItem>
           </SelectContent>
         </Select>
       </div>
+
+      {service === "Other" && (
+        <div className="space-y-2">
+          <Label htmlFor="customService">Custom Service Name</Label>
+          <Input
+            id="customService"
+            placeholder="e.g., AMC, Maintenance, Hosting"
+            value={customService}
+            onChange={(e) => setCustomService(e.target.value)}
+            required={service === "Other"}
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="title">Update Title</Label>

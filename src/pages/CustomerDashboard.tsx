@@ -22,16 +22,20 @@ import { ServiceUpdates } from "../components/ServiceUpdates";
 import { supabase } from "../lib/supabase";
 import { toast } from "sonner";
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../components/ui/popover";
+
 export function CustomerDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [serviceUpdates, setServiceUpdates] = useState<any[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
-  const [notifications] = useState([
-    "New SEO report available",
-    "Website update completed",
-  ]);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     checkUser();
@@ -44,6 +48,17 @@ export function CustomerDashboard() {
       return;
     }
     fetchDashboardData(user.id);
+    fetchNotifications(user.id);
+  };
+
+  const fetchNotifications = async (userId: string) => {
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (data) setNotifications(data);
   };
 
   const fetchDashboardData = async (userId: string) => {
@@ -89,6 +104,27 @@ export function CustomerDashboard() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const handleUpgradeRequest = async (plan: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          title: "Plan Upgrade Request",
+          message: `${userProfile?.full_name || user.email} wants to upgrade to ${plan} plan.`,
+          type: 'upgrade_request'
+        });
+
+      if (error) throw error;
+      toast.success("Upgrade request sent to admin! They will contact you shortly.");
+    } catch (error: any) {
+      toast.error("Failed to send request: " + error.message);
+    }
   };
 
   const handleFileUpload = async (files: File[]) => {
@@ -167,15 +203,45 @@ export function CustomerDashboard() {
     );
   }
 
+  // Define service tiers
+  const isServiceLocked = (serviceName: string) => {
+    const plan = userProfile?.membership || "Basic";
+    const name = serviceName.toLowerCase();
+
+    if (plan === "Premium") return false;
+    if (plan === "Pro") {
+      return !["website", "seo"].includes(name);
+    }
+    // Basic plan
+    return name !== "website";
+  };
+
+  // Get all services that should be visible
+  const standardServices = ["Website", "SEO", "Social Media"];
+  const customServices = Array.from(new Set(
+    serviceUpdates
+      .map(u => u.service)
+      .filter(s => !standardServices.includes(s))
+  ));
+
+  const allServices = [...standardServices, ...customServices];
+
   // Helper to get latest progress for a service
   const getLatestProgress = (serviceName: string) => {
     const update = serviceUpdates.find(u => u.service.toLowerCase() === serviceName.toLowerCase());
     return update ? update.progress : 0;
   };
 
-  const websiteProgress = getLatestProgress("Website");
-  const seoProgress = getLatestProgress("SEO");
-  const socialMediaProgress = getLatestProgress("Social Media");
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const getServiceIcon = (name: string) => {
+    switch (name.toLowerCase()) {
+      case "website": return <Globe className="w-5 h-5 text-[#6A89A7]" />;
+      case "seo": return <TrendingUp className="w-5 h-5 text-[#6A89A7]" />;
+      case "social media": return <Share2 className="w-5 h-5 text-[#6A89A7]" />;
+      default: return <Crown className="w-5 h-5 text-[#6A89A7]" />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f5f9fc] to-[#BDDDFC]/20">
@@ -194,14 +260,40 @@ export function CustomerDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="w-5 h-5 text-[#6A89A7]" />
-                  {notifications.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
-                      {notifications.length}
-                    </span>
-                  )}
-                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative text-[#6A89A7]">
+                      <Bell className="w-5 h-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-0" align="end">
+                    <div className="p-4 border-b border-gray-100">
+                      <h3 className="font-semibold text-[#384959]">Notifications</h3>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        notifications.map((n) => (
+                          <div key={n.id} className="p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                            <p className="text-sm font-medium text-[#384959]">{n.title}</p>
+                            <p className="text-xs text-gray-500 mt-1">{n.message}</p>
+                            <p className="text-[10px] text-gray-400 mt-2">
+                              {new Date(n.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 text-center text-sm text-gray-400">
+                          No notifications yet
+                        </div>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               <Button
                 variant="outline"
@@ -235,7 +327,7 @@ export function CustomerDashboard() {
               </div>
               <Button
                 variant="secondary"
-                onClick={() => navigate("/membership-plans")}
+                onClick={() => handleUpgradeRequest('Pro')}
                 className="bg-white text-[#6A89A7] hover:bg-white/90"
               >
                 Upgrade Plan
@@ -266,7 +358,7 @@ export function CustomerDashboard() {
         </Card>
 
         {/* Dashboard Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-white border border-gray-200">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="files">My Files</TabsTrigger>
@@ -276,90 +368,66 @@ export function CustomerDashboard() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Website</CardTitle>
-                    <Globe className="w-5 h-5 text-[#6A89A7]" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-[#6A89A7]">{websiteProgress}%</span>
-                      </div>
-                      <Progress value={websiteProgress} className="h-2" />
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {websiteProgress === 100 ? "Website completed" : "Website updates in progress"}
-                    </p>
-                    <Badge className={websiteProgress === 100 ? "bg-green-500 text-white" : "bg-[#88BDF2] text-white"}>
-                      {websiteProgress === 100 ? "Completed" : "Active"}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+              {allServices.map((serviceName) => {
+                const locked = isServiceLocked(serviceName);
+                const progress = getLatestProgress(serviceName);
 
-              <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">SEO</CardTitle>
-                    <TrendingUp className="w-5 h-5 text-[#6A89A7]" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-[#6A89A7]">{seoProgress}%</span>
+                return (
+                  <Card key={serviceName} className={`relative border-none shadow-lg hover:shadow-xl transition-shadow overflow-hidden ${locked ? 'opacity-75 grayscale-[0.5]' : ''}`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{serviceName}</CardTitle>
+                        {getServiceIcon(serviceName)}
                       </div>
-                      <Progress value={seoProgress} className="h-2" />
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {seoProgress > 0 ? "Keyword optimization on track" : "Waiting for updates"}
-                    </p>
-                    <Badge className={seoProgress > 70 ? "bg-green-500 text-white" : "bg-[#88BDF2] text-white"}>
-                      {seoProgress > 70 ? "On Track" : seoProgress > 0 ? "Active" : "Pending"}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600">Progress</span>
+                            <span className="font-semibold text-[#6A89A7]">{progress}%</span>
+                          </div>
+                          <Progress value={progress} className="h-2" />
+                        </div>
+                        <p className="text-sm text-gray-600 truncate">
+                          {progress === 100 ? "Service completed" : "Work in progress..."}
+                        </p>
+                        <Badge className={progress === 100 ? "bg-green-500 text-white" : "bg-[#88BDF2] text-white"}>
+                          {progress === 100 ? "Completed" : "Active"}
+                        </Badge>
+                      </div>
+                    </CardContent>
 
-              <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Social Media</CardTitle>
-                    <Share2 className="w-5 h-5 text-[#6A89A7]" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-[#6A89A7]">{socialMediaProgress}%</span>
+                    {locked && (
+                      <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center z-10 transition-all hover:bg-white/40">
+                        <div className="w-10 h-10 rounded-full bg-[#384959] flex items-center justify-center mb-2 shadow-lg">
+                          <Crown className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <p className="text-sm font-bold text-[#384959]">Upgrade to Unlock</p>
+                        <p className="text-[10px] text-gray-600">This service is not in your {userProfile?.membership} plan</p>
                       </div>
-                      <Progress value={socialMediaProgress} className="h-2" />
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {socialMediaProgress > 0 ? "Content creation active" : "Plan in progress"}
-                    </p>
-                    <Badge className={socialMediaProgress > 0 ? "bg-[#88BDF2] text-white" : "bg-gray-400 text-white"}>
-                      {socialMediaProgress > 0 ? "Active" : "Planned"}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                    )}
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Recent Updates */}
             <Card className="border-none shadow-lg">
               <CardHeader>
-                <CardTitle>Recent Service Updates</CardTitle>
-                <CardDescription>Latest updates on your services</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Recent Service Updates</CardTitle>
+                    <CardDescription>Latest updates on your services</CardDescription>
+                  </div>
+                  <Button
+                    variant="link"
+                    onClick={() => setActiveTab("updates")}
+                    className="text-[#6A89A7] hover:text-[#88BDF2]"
+                  >
+                    View All
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {serviceUpdates.length > 0 ? (

@@ -78,7 +78,7 @@ export function Login() {
           <div className="inline-block p-4 bg-white rounded-2xl shadow-xl mb-4">
             <Shield className="w-10 h-10 text-[#6A89A7]" />
           </div>
-          <h1 className="text-5xl font-extrabold text-[#384959] tracking-tight">Samrat CRM</h1>
+          <h1 className="text-5xl font-extrabold text-[#384959] tracking-tight">CRM</h1>
           <p className="text-[#64748b] font-medium text-lg">Next-Gen Service Management Platform</p>
         </div>
 
@@ -138,7 +138,7 @@ export function Login() {
                   </div>
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-[#6A89A7] to-[#88BDF2] hover:from-[#5d7a96] hover:to-[#7aa9da] text-white font-bold rounded-xl shadow-lg shadow-[#88BDF2]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full h-12 mt-5 bg-gradient-to-r from-[#6A89A7] to-[#88BDF2] hover:from-[#5d7a96] hover:to-[#7aa9da] text-white font-bold rounded-xl shadow-lg shadow-[#88BDF2]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                     disabled={isLoading}
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
@@ -177,7 +177,7 @@ export function Login() {
                   </div>
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-[#384959] hover:bg-[#2c3a47] text-white font-bold rounded-xl shadow-lg shadow-[#384959]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full h-12 mt-5 bg-[#384959] hover:bg-[#2c3a47] text-white font-bold rounded-xl shadow-lg shadow-[#384959]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                     disabled={isLoading}
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}

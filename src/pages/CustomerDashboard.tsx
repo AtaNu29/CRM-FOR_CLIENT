@@ -64,7 +64,7 @@ export function CustomerDashboard() {
         .from('service_updates')
         .select('*')
         .eq('customer_id', userId)
-        .order('date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (updatesError) throw updatesError;
       setServiceUpdates(updates);

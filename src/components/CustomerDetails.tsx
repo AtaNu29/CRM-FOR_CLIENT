@@ -46,7 +46,7 @@ export function CustomerDetails({ customer, onUpdate }: CustomerDetailsProps) {
         .from("service_updates")
         .select("*")
         .eq("customer_id", customer.id)
-        .order("date", { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (updatesError) throw updatesError;
       setUpdates(updatesData || []);

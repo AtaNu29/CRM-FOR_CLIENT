@@ -5,9 +5,10 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { User, Shield, Loader2 } from "lucide-react";
+import { User, Shield, Loader2, Eye, EyeOff, Moon, Sun, Github, Mail } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { toast } from "sonner";
+import { Checkbox } from "../components/ui/checkbox";
 
 export function Login() {
   const navigate = useNavigate();
@@ -16,6 +17,10 @@ export function Login() {
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("customer");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleLogin = async (email: string, password: string, type: 'admin' | 'customer') => {
     setIsLoading(true);
@@ -68,151 +73,366 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4 relative overflow-hidden">
-      {/* Premium Background Elements */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-br from-[#BDDDFC]/30 to-transparent rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-[#88BDF2]/20 to-transparent rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none" />
+    <div
+      className="min-h-screen  flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500"
+      style={{
+        background: isDarkMode
+          ? 'linear-gradient(to bottom right, #0f172a, #581c87, #0f172a)'
+          : 'linear-gradient(to bottom right, #22d3ee, #3b82f6, #9333ea)'
+      }}
+    >
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute top-0 -left-4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"
+          style={{ backgroundColor: isDarkMode ? '#9333ea' : '#f472b6' }}
+        ></div>
+        <div
+          className="absolute top-0 -right-4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"
+          style={{ backgroundColor: isDarkMode ? '#06b6d4' : '#fbbf24' }}
+        ></div>
+        <div
+          className="absolute -bottom-8 left-20 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"
+          style={{ backgroundColor: isDarkMode ? '#ec4899' : '#22d3ee' }}
+        ></div>
+      </div>
 
-      <div className="w-full max-w-md z-10 animate-in fade-in zoom-in-95 duration-700">
-        {/* Branding Area */}
-        <div className="text-center mb-8 space-y-3 flex flex-col items-center">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#6A89A7] to-[#88BDF2] rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-            <div className="relative flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-xl transition-transform duration-500 group-hover:scale-110">
-              <Shield className="w-10 h-10 text-[#6A89A7]" />
+      <div className="w-full max-w-md z-10">
+        {/* Glassmorphism Card */}
+        <Card
+          className="backdrop-blur-2xl shadow-2xl border-2 rounded-[2.5rem] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700 relative"
+          style={{
+            backgroundColor: isDarkMode ? 'rgba(30, 41, 59, 0.6)' : 'rgba(255, 255, 255, 0.7)',
+            borderColor: isDarkMode ? 'rgba(168, 85, 247, 0.3)' : 'rgba(255, 255, 255, 0.6)'
+          }}
+        >
+          {/* Dark Mode Toggle - Top Left Corner */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="absolute top-4 left-4 p-2 rounded-none shadow-md hover:scale-110 transition-all duration-300 z-50 hover:shadow-lg"
+            style={{
+              backgroundColor: isDarkMode ? '#9333ea' : '#ffffff',
+              color: isDarkMode ? '#fde047' : '#9333ea'
+            }}
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+
+          <CardHeader className="text-center px-14 pt-16 pb-8 space-y-3">
+            <div
+              className="mx-auto w-16 h-16 rounded-none flex items-center justify-center mb-4 animate-in zoom-in duration-500 shadow-lg"
+              style={{ background: 'linear-gradient(to bottom right, #06b6d4, #3b82f6, #9333ea)' }}
+            >
+              <Shield className="w-8 h-8 text-white" />
             </div>
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-6xl font-black text-[#384959] tracking-tighter drop-shadow-sm">CRM</h1>
-            <p className="text-[#64748b] font-semibold text-sm tracking-widest uppercase opacity-80">Next-Gen Management</p>
-          </div>
-        </div>
-
-        {/* Main Authentication Card */}
-        <Card className="shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] border border-white/40 bg-white/70 backdrop-blur-2xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="pt-10 pb-4 text-center">
-            <CardTitle className="text-3xl font-extrabold text-[#384959] tracking-tight">Welcome Back</CardTitle>
-            <CardDescription className="text-slate-500 font-medium text-base">
-              Securely access your service dashboard
+            <CardTitle className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tight`}>
+              Welcome Back
+            </CardTitle>
+            <CardDescription className={`text-base ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+              Sign in to access your dashboard
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="px-8 pb-10">
-            <Tabs defaultValue="customer" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-200/40 p-1.5 rounded-2xl h-14">
+          <CardContent className="px-14 pb-14 pt-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              {/* Modern Tab Switcher */}
+              <TabsList
+                className="grid w-full grid-cols-2 mb-10 p-2 rounded-2xl h-14"
+                style={{ backgroundColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.7)' }}
+              >
                 <TabsTrigger
                   value="customer"
-                  className="flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg py-2 transition-all duration-300 font-bold text-slate-500 data-[state=active]:text-[#6A89A7]"
+                  className="rounded-lg font-semibold transition-all duration-300 data-[state=active]:shadow-lg"
+                  style={{
+                    color: activeTab === 'customer' ? '#ffffff' : (isDarkMode ? '#cbd5e1' : '#334155'),
+                    background: activeTab === 'customer'
+                      ? 'linear-gradient(to right, #06b6d4, #3b82f6)'
+                      : 'transparent'
+                  }}
                 >
-                  <User className="w-4 h-4" />
+                  <User className="w-4 h-4 mr-2" />
                   Customer
                 </TabsTrigger>
                 <TabsTrigger
                   value="admin"
-                  className="flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg py-2 transition-all duration-300 font-bold text-slate-500 data-[state=active]:text-[#384959]"
+                  className="rounded-2xl font-semibold transition-all duration-300 data-[state=active]:shadow-lg"
+                  style={{
+                    color: activeTab === 'admin' ? '#ffffff' : (isDarkMode ? '#cbd5e1' : '#334155'),
+                    background: activeTab === 'admin'
+                      ? 'linear-gradient(to right, #9333ea, #ec4899)'
+                      : 'transparent'
+                  }}
                 >
-                  <Shield className="w-4 h-4" />
-                  Staff
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin
                 </TabsTrigger>
               </TabsList>
 
-              <div className="relative min-h-[300px]">
-                {/* Customer Login Section */}
-                <TabsContent value="customer" className="animate-in fade-in slide-in-from-left-8 duration-500 outline-none m-0">
-                  <div className="bg-gradient-to-b from-[#f8fafc] to-white p-7 rounded-3xl border border-slate-100 shadow-sm">
-                    <form onSubmit={handleCustomerLogin} className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="customer-email" className="text-xs font-black uppercase tracking-wider text-[#384959]/60 ml-1">Client Email</Label>
-                        <Input
-                          id="customer-email"
-                          type="email"
-                          placeholder="Your official email"
-                          value={customerEmail}
-                          onChange={(e) => setCustomerEmail(e.target.value)}
-                          required
-                          className="h-14 border-slate-200/70 bg-white/50 shadow-inner focus:ring-4 focus:ring-[#BDDDFC]/20 rounded-2xl px-5 transition-all text-slate-700"
-                          disabled={isLoading}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="customer-password" className="text-xs font-black uppercase tracking-wider text-[#384959]/60 ml-1">Security Key</Label>
-                        <Input
-                          id="customer-password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={customerPassword}
-                          onChange={(e) => setCustomerPassword(e.target.value)}
-                          required
-                          className="h-14 border-slate-200/70 bg-white/50 shadow-inner focus:ring-4 focus:ring-[#BDDDFC]/20 rounded-2xl px-5 transition-all text-slate-700"
-                          disabled={isLoading}
-                        />
-                      </div>
-                      <Button
-                        type="submit"
-                        className="w-full h-14 mt-6 bg-gradient-to-r from-[#6A89A7] to-[#88BDF2] hover:from-[#5d7a96] hover:to-[#7aa9da] text-white font-black text-lg rounded-2xl shadow-xl shadow-[#88BDF2]/30 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <User className="w-6 h-6" />}
-                        Access Dashboard
-                      </Button>
-                    </form>
+              {/* Customer Login Form */}
+              <TabsContent value="customer" className="mt-0 space-y-6 animate-in fade-in slide-in-from-left-4 duration-500">
+                <form onSubmit={handleCustomerLogin} className="space-y-5">
+                  {/* Email Input with Floating Label */}
+                  <div className="relative group mb-8" style={{ minHeight: '48px' }}>
+                    <Input
+                      type="email"
+                      id="customer-email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      required
+                      placeholder=" "
+                      className="peer h-12 pt-4 px-4 rounded-2xl transition-all duration-300 focus:ring-2 placeholder-transparent relative z-0 w-full"
+                      style={{
+                        backgroundColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: isDarkMode ? '#475569' : '#cbd5e1',
+                        borderWidth: '1px',
+                        color: isDarkMode ? '#ffffff' : '#1e293b',
+                        minHeight: '48px',
+                        height: '48px',
+                        display: 'block'
+                      }}
+                      disabled={isLoading}
+                    />
+                    <Label
+                      htmlFor="customer-email"
+                      className={`absolute left-4 z-10 pointer-events-none transition-all duration-300 
+                        ${isDarkMode ? 'text-slate-400 peer-focus:text-cyan-400' : 'text-slate-500 peer-focus:text-cyan-600'}
+                        peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                        top-2 -translate-y-0 text-xs font-semibold`}
+                    >
+                      Enter id
+                    </Label>
                   </div>
-                </TabsContent>
 
-                {/* Admin Login Section */}
-                <TabsContent value="admin" className="animate-in fade-in slide-in-from-right-8 duration-500 outline-none m-0">
-                  <div className="bg-gradient-to-b from-[#f1f5f9] to-white p-7 rounded-3xl border border-slate-200 shadow-sm">
-                    <form onSubmit={handleAdminLogin} className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="admin-email" className="text-xs font-black uppercase tracking-wider text-slate-500 ml-1">Administrator ID</Label>
-                        <Input
-                          id="admin-email"
-                          type="email"
-                          placeholder="Admin credentials"
-                          value={adminEmail}
-                          onChange={(e) => setAdminEmail(e.target.value)}
-                          required
-                          className="h-14 border-slate-200/70 bg-white/50 shadow-inner focus:ring-4 focus:ring-slate-200/50 rounded-2xl px-5 transition-all text-slate-700"
-                          disabled={isLoading}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="admin-password" className="text-xs font-black uppercase tracking-wider text-slate-500 ml-1">Access Token</Label>
-                        <Input
-                          id="admin-password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={adminPassword}
-                          onChange={(e) => setAdminPassword(e.target.value)}
-                          required
-                          className="h-14 border-slate-200/70 bg-white/50 shadow-inner focus:ring-4 focus:ring-slate-200/50 rounded-2xl px-5 transition-all text-slate-700"
-                          disabled={isLoading}
-                        />
-                      </div>
-                      <Button
-                        type="submit"
-                        className="w-full h-14 mt-6 bg-[#384959] hover:bg-[#2c3a47] text-white font-black text-lg rounded-2xl shadow-xl shadow-slate-400/20 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Shield className="w-6 h-6" />}
-                        Staff Gateway
-                      </Button>
-                    </form>
+                  {/* Password Input with Show/Hide Toggle */}
+                  <div className="relative group mb-8" style={{ minHeight: '48px' }}>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      id="customer-password"
+                      value={customerPassword}
+                      onChange={(e) => setCustomerPassword(e.target.value)}
+                      required
+                      placeholder=" "
+                      className="peer h-12 pt-4 px-4 rounded-2xl transition-all duration-300 focus:ring-2 placeholder-transparent relative z-0 w-full"
+                      style={{
+                        backgroundColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: isDarkMode ? '#475569' : '#cbd5e1',
+                        borderWidth: '1px',
+                        color: isDarkMode ? '#ffffff' : '#1e293b',
+                        minHeight: '48px',
+                        height: '48px',
+                        display: 'block'
+                      }}
+                      disabled={isLoading}
+                    />
+                    <Label
+                      htmlFor="customer-password"
+                      className={`absolute left-4 z-10 pointer-events-none transition-all duration-300 
+                        ${isDarkMode ? 'text-slate-400 peer-focus:text-cyan-400' : 'text-slate-500 peer-focus:text-cyan-600'}
+                        peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                        top-2 -translate-y-0 text-xs font-semibold`}
+                    >
+                      Password
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className={`absolute z-20 ${isDarkMode ? 'text-slate-400 hover:text-cyan-400' : 'text-slate-500 hover:text-cyan-600'} transition-colors`}
+                      style={{ top: '50%', transform: 'translateY(-50%)', right: '12px' }}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
                   </div>
-                </TabsContent>
-              </div>
+
+                  {/* Remember Me & Forgot Password */}
+                  <div className="flex items-center justify-between mb-8 mt-6">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember"
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                        className={`${isDarkMode ? 'border-slate-600' : 'border-slate-400'} rounded-none`}
+                      />
+                      <label
+                        htmlFor="remember"
+                        className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} cursor-pointer`}
+                      >
+                        Remember me
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-sm font-medium transition-colors"
+                      style={{ color: isDarkMode ? '#22d3ee' : '#0891b2' }}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+
+                  {/* Gradient Login Button */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-12 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 mb-6"
+                    style={{ background: 'linear-gradient(to right, #06b6d4, #3b82f6, #9333ea)' }}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              {/* Admin Login Form */}
+              <TabsContent value="admin" className="mt-0 space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <form onSubmit={handleAdminLogin} className="space-y-5">
+                  {/* Email Input with Floating Label */}
+                  <div className="relative group mb-8" style={{ minHeight: '48px' }}>
+                    <Input
+                      type="email"
+                      id="admin-email"
+                      value={adminEmail}
+                      onChange={(e) => setAdminEmail(e.target.value)}
+                      required
+                      placeholder=" "
+                      className="peer h-12 pt-4 px-4 rounded-2xl transition-all duration-300 focus:ring-2 placeholder-transparent relative z-0 w-full"
+                      style={{
+                        backgroundColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: isDarkMode ? '#475569' : '#cbd5e1',
+                        borderWidth: '1px',
+                        color: isDarkMode ? '#ffffff' : '#1e293b',
+                        minHeight: '48px',
+                        height: '48px',
+                        display: 'block'
+                      }}
+                      disabled={isLoading}
+                    />
+                    <Label
+                      htmlFor="admin-email"
+                      className={`absolute left-4 z-10 pointer-events-none transition-all duration-300 
+                        ${isDarkMode ? 'text-slate-400 peer-focus:text-purple-400' : 'text-slate-500 peer-focus:text-purple-600'}
+                        peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                        top-2 -translate-y-0 text-xs font-semibold`}
+                    >
+                      Enter id
+                    </Label>
+                  </div>
+
+                  {/* Password Input with Show/Hide Toggle */}
+                  <div className="relative group mb-8" style={{ minHeight: '48px' }}>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      id="admin-password"
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      required
+                      placeholder=" "
+                      className="peer h-12 pt-4 pr-12 px-4 rounded-2xl transition-all duration-300 focus:ring-2 placeholder-transparent relative z-0 w-full"
+                      style={{
+                        backgroundColor: isDarkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: isDarkMode ? '#475569' : '#cbd5e1',
+                        borderWidth: '1px',
+                        color: isDarkMode ? '#ffffff' : '#1e293b',
+                        minHeight: '48px',
+                        height: '48px',
+                        display: 'block'
+                      }}
+                      disabled={isLoading}
+                    />
+                    <Label
+                      htmlFor="admin-password"
+                      className={`absolute left-4 z-10 pointer-events-none transition-all duration-300 
+                        ${isDarkMode ? 'text-slate-400 peer-focus:text-purple-400' : 'text-slate-500 peer-focus:text-purple-600'}
+                        peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base
+                        top-2 -translate-y-0 text-xs font-semibold`}
+                    >
+                      Password
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className={`absolute z-20 ${isDarkMode ? 'text-slate-400 hover:text-purple-400' : 'text-slate-500 hover:text-purple-600'} transition-colors`}
+                      style={{ top: '50%', transform: 'translateY(-50%)', right: '12px' }}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+
+                  {/* Remember Me & Forgot Password */}
+                  <div className="flex items-center justify-between mb-8 mt-6">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember-admin"
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                        className={`${isDarkMode ? 'border-slate-600' : 'border-slate-400'} rounded-md`}
+                      />
+                      <label
+                        htmlFor="remember-admin"
+                        className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} cursor-pointer`}
+                      >
+                        Remember me
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-sm font-medium transition-colors"
+                      style={{ color: isDarkMode ? '#c084fc' : '#9333ea' }}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+
+                  {/* Gradient Login Button */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-12 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                    style={{ background: 'linear-gradient(to right, #9333ea, #ec4899, #a855f7)' }}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      "Admin Sign In"
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
 
         {/* Footer */}
-        <div className="text-center mt-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
-          <p className="text-slate-400 text-xs font-bold tracking-widest uppercase">
-            © 2026 Innovation CRM • Confidential Access
-          </p>
-        </div>
+        <p
+          className="text-center mt-8 text-sm font-medium"
+          style={{ color: isDarkMode ? '#cbd5e1' : 'rgba(255, 255, 255, 0.9)' }}
+        >
+          © 2026 CRM Platform. All rights reserved.
+        </p>
       </div>
+
+      {/* Custom Animations */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+          }
+          .animate-blob {
+            animation: blob 7s infinite;
+          }
+          .animation-delay-2000 {
+            animation-delay: 2s;
+          }
+          .animation-delay-4000 {
+            animation-delay: 4s;
+          }
+        `
+      }} />
     </div>
   );
 }

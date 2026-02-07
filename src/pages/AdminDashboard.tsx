@@ -66,6 +66,13 @@ export function AdminDashboard() {
 
       if (error) throw error;
 
+      // Fetch file counts
+      const { data: filesData } = await supabase.from('files').select('customer_id');
+      const fileCounts = (filesData || []).reduce((acc: any, curr: any) => {
+        acc[curr.customer_id] = (acc[curr.customer_id] || 0) + 1;
+        return acc;
+      }, {});
+
       const customersList = data.filter((p: any) => p.role === 'customer').map(p => ({
         id: p.id,
         name: p.full_name || 'No Name',
@@ -73,7 +80,7 @@ export function AdminDashboard() {
         membership: p.membership || 'Basic',
         status: p.status || 'Active',
         joinDate: p.join_date || p.created_at?.split('T')[0],
-        filesCount: 0 // We'll need a real count later
+        filesCount: fileCounts[p.id] || 0
       }));
 
       const adminsList = data.filter((p: any) => p.role === 'admin').map(p => ({
@@ -365,7 +372,10 @@ export function AdminDashboard() {
                                     </DialogDescription>
                                   </DialogHeader>
                                   {selectedCustomer && (
-                                    <CustomerDetails customer={selectedCustomer} />
+                                    <CustomerDetails
+                                      customer={selectedCustomer}
+                                      onUpdate={fetchData}
+                                    />
                                   )}
                                 </DialogContent>
                               </Dialog>

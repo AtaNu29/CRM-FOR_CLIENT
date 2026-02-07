@@ -167,6 +167,16 @@ export function CustomerDashboard() {
     );
   }
 
+  // Helper to get latest progress for a service
+  const getLatestProgress = (serviceName: string) => {
+    const update = serviceUpdates.find(u => u.service.toLowerCase() === serviceName.toLowerCase());
+    return update ? update.progress : 0;
+  };
+
+  const websiteProgress = getLatestProgress("Website");
+  const seoProgress = getLatestProgress("SEO");
+  const socialMediaProgress = getLatestProgress("Social Media");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f5f9fc] to-[#BDDDFC]/20">
       {/* Header */}
@@ -278,14 +288,16 @@ export function CustomerDashboard() {
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-[#6A89A7]">75%</span>
+                        <span className="font-semibold text-[#6A89A7]">{websiteProgress}%</span>
                       </div>
-                      <Progress value={75} className="h-2" />
+                      <Progress value={websiteProgress} className="h-2" />
                     </div>
                     <p className="text-sm text-gray-600">
-                      Website updates in progress
+                      {websiteProgress === 100 ? "Website completed" : "Website updates in progress"}
                     </p>
-                    <Badge className="bg-[#88BDF2] text-white">Active</Badge>
+                    <Badge className={websiteProgress === 100 ? "bg-green-500 text-white" : "bg-[#88BDF2] text-white"}>
+                      {websiteProgress === 100 ? "Completed" : "Active"}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -302,14 +314,16 @@ export function CustomerDashboard() {
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-[#6A89A7]">90%</span>
+                        <span className="font-semibold text-[#6A89A7]">{seoProgress}%</span>
                       </div>
-                      <Progress value={90} className="h-2" />
+                      <Progress value={seoProgress} className="h-2" />
                     </div>
                     <p className="text-sm text-gray-600">
-                      Keyword optimization on track
+                      {seoProgress > 0 ? "Keyword optimization on track" : "Waiting for updates"}
                     </p>
-                    <Badge className="bg-green-500 text-white">On Track</Badge>
+                    <Badge className={seoProgress > 70 ? "bg-green-500 text-white" : "bg-[#88BDF2] text-white"}>
+                      {seoProgress > 70 ? "On Track" : seoProgress > 0 ? "Active" : "Pending"}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -326,14 +340,16 @@ export function CustomerDashboard() {
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-gray-600">Progress</span>
-                        <span className="font-semibold text-[#6A89A7]">60%</span>
+                        <span className="font-semibold text-[#6A89A7]">{socialMediaProgress}%</span>
                       </div>
-                      <Progress value={60} className="h-2" />
+                      <Progress value={socialMediaProgress} className="h-2" />
                     </div>
                     <p className="text-sm text-gray-600">
-                      Content creation active
+                      {socialMediaProgress > 0 ? "Content creation active" : "Plan in progress"}
                     </p>
-                    <Badge className="bg-[#88BDF2] text-white">Active</Badge>
+                    <Badge className={socialMediaProgress > 0 ? "bg-[#88BDF2] text-white" : "bg-gray-400 text-white"}>
+                      {socialMediaProgress > 0 ? "Active" : "Planned"}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>

@@ -33,6 +33,7 @@ import {
   Shield,
   TrendingUp,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { CustomerDetails } from "../components/CustomerDetails";
 import { AddUserDialog } from "../components/AddUserDialog";
@@ -212,6 +213,27 @@ export function AdminDashboard() {
       await fetchData();
     } catch (error: any) {
       toast.error("Failed to create user: " + error.message);
+    }
+  };
+
+  const handleDeleteCustomer = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this customer? This will also remove all their files, service updates, and notifications. (Note: You should also delete the user from Supabase Auth if you want to reuse the email)")) return;
+
+    try {
+      // 1. Delete associated data
+      await supabase.from('service_updates').delete().eq('customer_id', id);
+      await supabase.from('files').delete().eq('customer_id', id);
+      await supabase.from('notifications').delete().eq('user_id', id);
+
+      // 2. Delete the profile
+      const { error } = await supabase.from('profiles').delete().eq('id', id);
+
+      if (error) throw error;
+
+      toast.success("Customer removed successfully!");
+      fetchData();
+    } catch (error: any) {
+      toast.error("Error deleting customer: " + error.message);
     }
   };
 
@@ -490,6 +512,15 @@ export function AdminDashboard() {
                                   )}
                                 </DialogContent>
                               </Dialog>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteCustomer(customer.id)}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 ml-2"
+                              >
+                                <Trash2 className="w-4 h-4 ml-1" />
+                                Delete
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))

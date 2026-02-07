@@ -89,7 +89,7 @@ export function Login() {
               Choose your account type to continue
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-8 pb-10">
+          <CardContent className="px-8 pb-12">
             <Tabs defaultValue="customer" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-100/50 p-1 rounded-xl">
                 <TabsTrigger
@@ -108,82 +108,86 @@ export function Login() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="customer" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <form onSubmit={handleCustomerLogin} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="customer-email" className="text-sm font-bold text-[#384959] ml-1">Email Address</Label>
-                    <Input
-                      id="customer-email"
-                      type="email"
-                      placeholder="Enter your customer email"
-                      value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
-                      required
-                      className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#88BDF2] rounded-xl"
+              <TabsContent value="customer" className="animate-in fade-in slide-in-from-left-6 duration-500 outline-none">
+                <div className="bg-blue-50/30 p-6 rounded-2xl border border-blue-100/50">
+                  <form onSubmit={handleCustomerLogin} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="customer-email" className="text-sm font-bold text-[#384959] ml-1">Email Address</Label>
+                      <Input
+                        id="customer-email"
+                        type="email"
+                        placeholder="Enter your customer email"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        required
+                        className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#88BDF2] rounded-xl"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="customer-password" className="text-sm font-bold text-[#384959] ml-1">Password</Label>
+                      <Input
+                        id="customer-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={customerPassword}
+                        onChange={(e) => setCustomerPassword(e.target.value)}
+                        required
+                        className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#88BDF2] rounded-xl"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full h-12 mt-10 bg-gradient-to-r from-[#6A89A7] to-[#88BDF2] hover:from-[#5d7a96] hover:to-[#7aa9da] text-white font-bold rounded-xl shadow-lg shadow-[#88BDF2]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="customer-password" className="text-sm font-bold text-[#384959] ml-1">Password</Label>
-                    <Input
-                      id="customer-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={customerPassword}
-                      onChange={(e) => setCustomerPassword(e.target.value)}
-                      required
-                      className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#88BDF2] rounded-xl"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full h-12 mt-8 bg-gradient-to-r from-[#6A89A7] to-[#88BDF2] hover:from-[#5d7a96] hover:to-[#7aa9da] text-white font-bold rounded-xl shadow-lg shadow-[#88BDF2]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
-                    Sign In as Customer
-                  </Button>
-                </form>
+                    >
+                      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <User className="w-5 h-5" />}
+                      Sign In as Customer
+                    </Button>
+                  </form>
+                </div>
               </TabsContent>
 
-              <TabsContent value="admin" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <form onSubmit={handleAdminLogin} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-email" className="text-sm font-bold text-[#384959] ml-1">Admin Email</Label>
-                    <Input
-                      id="admin-email"
-                      type="email"
-                      placeholder="Enter admin credentials"
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                      required
-                      className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#384959] rounded-xl"
+              <TabsContent value="admin" className="animate-in fade-in slide-in-from-right-6 duration-500 outline-none">
+                <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-200/50">
+                  <form onSubmit={handleAdminLogin} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-email" className="text-sm font-bold text-[#384959] ml-1">Admin Email</Label>
+                      <Input
+                        id="admin-email"
+                        type="email"
+                        placeholder="Enter admin credentials"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        required
+                        className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#384959] rounded-xl"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-password" className="text-sm font-bold text-[#384959] ml-1">Password</Label>
+                      <Input
+                        id="admin-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        required
+                        className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#384959] rounded-xl"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full h-12 mt-10 bg-[#384959] hover:bg-[#2c3a47] text-white font-bold rounded-xl shadow-lg shadow-[#384959]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-password" className="text-sm font-bold text-[#384959] ml-1">Password</Label>
-                    <Input
-                      id="admin-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      required
-                      className="h-12 border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-[#384959] rounded-xl"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full h-12 mt-8 bg-[#384959] hover:bg-[#2c3a47] text-white font-bold rounded-xl shadow-lg shadow-[#384959]/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
-                    Sign In as Administrator
-                  </Button>
-                </form>
+                    >
+                      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
+                      Sign In as Administrator
+                    </Button>
+                  </form>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
